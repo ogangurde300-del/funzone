@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FunZone — Play. Explore. Create.</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c28;
+    --border: rgba(255,255,255,0.08);
+    --accent: #7c5cfc;
+    --accent2: #fc5c7c;
+    --accent3: #5cfcd4;
+    --text: #f0f0ff;
+    --muted: #888899;
+    --neon: #b8f5e6;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+    background: rgba(10,10,15,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2rem; height: 60px;
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.4rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    cursor: pointer;
+  }
+  .nav-links { display: flex; gap: 0.25rem; }
+  .nav-links button {
+    background: none; border: none; color: var(--muted); font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; padding: 0.4rem 0.85rem; border-radius: 20px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-links button:hover, .nav-links button.active {
+    color: var(--text); background: var(--surface2);
+  }
+
+  /* SECTIONS */
+  section {
+    min-height: 100vh; padding: 80px 2rem 4rem;
+    max-width: 1100px; margin: 0 auto;
+    display: none;
+  }
+  section.active { display: block; }
+
+  /* HERO */
+  .hero-wrap { min-height: calc(100vh - 80px); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 1.5rem; position: relative; }
+  .hero-badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 0.35rem 1rem; font-size: 0.8rem; color: var(--accent3); letter-spacing: 0.05em; }
+  .hero-title { font-family: 'Syne', sans-serif; font-size: clamp(2.8rem, 8vw, 5.5rem); font-weight: 800; line-height: 1.05; }
+  .hero-title span { background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero-sub { font-size: 1.1rem; color: var(--muted); max-width: 480px; }
+  .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white; border: none; border-radius: 30px;
+    padding: 0.75rem 2rem; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500;
+    cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 20px rgba(124,92,252,0.4);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(124,92,252,0.6); }
+  .btn-outline {
+    background: none; color: var(--text); border: 1px solid var(--border);
+    border-radius: 30px; padding: 0.75rem 2rem;
+    font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* FLOATING ORBS */
+  .orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; opacity: 0.18; }
+  .orb1 { width: 400px; height: 400px; background: var(--accent); top: -100px; right: -100px; }
+  .orb2 { width: 300px; height: 300px; background: var(--accent2); bottom: 100px; left: -80px; }
+
+  /* STATS ROW */
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 2.5rem; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; text-align: center; }
+  .stat-num { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--accent); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+
+  /* PAGE HEADINGS */
+  .page-title { font-family: 'Syne', sans-serif; font-size: 2.4rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .page-sub { color: var(--muted); margin-bottom: 2.5rem; font-size: 0.95rem; }
+
+  /* GAMES */
+  .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+  .game-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    padding: 1.5rem; transition: border-color 0.2s, transform 0.2s;
+  }
+  .game-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+  .game-card h3 { font-family: 'Syne', sans-serif; font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .game-card p { color: var(--muted); font-size: 0.88rem; margin-bottom: 1.2rem; }
+
+  /* REACTION GAME */
+  #reaction-box {
+    background: var(--surface2); border-radius: 14px; padding: 2rem;
+    text-align: center; cursor: pointer; user-select: none; transition: background 0.1s;
+    min-height: 120px; display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; color: var(--muted); border: 1px solid var(--border);
+  }
+  #reaction-box.green { background: #1a3a2a; color: #5cfca4; }
+  #reaction-box.red { background: #3a1a1a; color: #fc5c5c; }
+
+  /* MEMORY GAME */
+  .memory-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 1rem; }
+  .mem-card {
+    aspect-ratio: 1; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; cursor: pointer; transition: transform 0.15s, background 0.15s;
+    user-select: none;
+  }
+  .mem-card:hover { transform: scale(1.05); }
+  .mem-card.flipped { background: var(--surface); border-color: var(--accent); }
+  .mem-card.matched { background: #1a2e1a; border-color: var(--accent3); }
+
+  /* WHACK MOLE */
+  .mole-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 1rem; }
+  .mole-hole {
+    aspect-ratio: 1; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; cursor: pointer; transition: background 0.1s; user-select: none;
+  }
+  .mole-hole.active { background: #2a1a3a; border-color: var(--accent); }
+
+  /* TRIVIA */
+  .quiz-q { font-size: 1.05rem; margin-bottom: 1.2rem; font-weight: 500; }
+  .quiz-opts { display: flex; flex-direction: column; gap: 0.6rem; }
+  .quiz-opt {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 0.75rem 1rem; cursor: pointer; transition: all 0.15s; font-size: 0.9rem;
+  }
+  .quiz-opt:hover { border-color: var(--accent); color: var(--accent); }
+  .quiz-opt.correct { background: #1a2e1a; border-color: var(--accent3); color: var(--accent3); }
+  .quiz-opt.wrong { background: #2e1a1a; border-color: var(--accent2); color: var(--accent2); }
+
+  /* HEATMAP */
+/* PLAYGROUND (toggles) */
+  .toggle-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; }
+  .toggle-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 1.25rem; display: flex; align-items: center; justify-content: space-between;
+    transition: border-color 0.2s;
+  }
+  .toggle-card:hover { border-color: var(--border); }
+  .toggle-card.on { border-color: var(--accent); }
+  .toggle-info h4 { font-size: 0.95rem; font-weight: 500; }
+  .toggle-info p { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+  .toggle {
+    width: 48px; height: 26px; background: var(--surface2); border-radius: 13px;
+    position: relative; cursor: pointer; transition: background 0.25s; flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+  .toggle.on { background: var(--accent); border-color: var(--accent); }
+  .toggle::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 18px; height: 18px; background: white; border-radius: 50%;
+    transition: transform 0.25s;
+  }
+  .toggle.on::after { transform: translateX(22px); }
+
+  /* SLIDERS */
+  .slider-section { margin-top: 2rem; }
+  .slider-row { margin-bottom: 1.25rem; }
+  .slider-row label { font-size: 0.85rem; color: var(--muted); display: flex; justify-content: space-between; }
+  .slider-row label span { color: var(--accent); font-weight: 500; }
+  .slider-row input[type=range] {
+    width: 100%; margin-top: 0.4rem; accent-color: var(--accent);
+    background: var(--surface2); border-radius: 4px; height: 4px; outline: none;
+  }
+
+  /* VISUAL DEMO */
+  #demo-box {
+    margin-top: 1.5rem; border-radius: 16px; height: 160px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800;
+    transition: all 0.3s; border: 1px solid var(--border); color: white;
+  }
+
+  /* LEADERBOARD */
+  .lb-table { width: 100%; border-collapse: collapse; }
+  .lb-table th { font-size: 0.75rem; color: var(--muted); text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); font-weight: 400; letter-spacing: 0.05em; }
+  .lb-table td { padding: 0.75rem; font-size: 0.9rem; border-bottom: 1px solid var(--border); }
+  .lb-table tr:last-child td { border-bottom: none; }
+  .rank-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 8px; font-size: 0.8rem; font-weight: 700;
+  }
+  .rank-1 { background: #3a2e00; color: #ffd700; }
+  .rank-2 { background: #2a2a2a; color: #c0c0c0; }
+  .rank-3 { background: #2a1a00; color: #cd7f32; }
+  .rank-other { background: var(--surface2); color: var(--muted); }
+  .score-bar-wrap { width: 100%; background: var(--surface2); border-radius: 4px; height: 6px; }
+  .score-bar { height: 6px; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .lb-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem; }
+
+  /* ABOUT */
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-top: 2rem; }
+  .feature-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 1.5rem; text-align: center;
+  }
+  .feature-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+  .feature-card h3 { font-family: 'Syne', sans-serif; font-size: 1rem; margin-bottom: 0.4rem; }
+  .feature-card p { font-size: 0.82rem; color: var(--muted); }
+  .team-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; }
+  .team-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 1.25rem; display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 200px;
+  }
+  .avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0; }
+  .av-purple { background: #2a1a5a; color: var(--accent); }
+  .av-pink { background: #3a1a2a; color: var(--accent2); }
+  .av-teal { background: #0a2a2a; color: var(--accent3); }
+
+  /* SCORE DISPLAY */
+  .score-display { display: inline-block; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 0.3rem 0.8rem; font-size: 0.85rem; color: var(--accent); font-weight: 500; margin-bottom: 0.75rem; }
+
+  /* GAME SCORE BAR */
+  .score-row { display: flex; gap: 1rem; margin-bottom: 1rem; }
+  .score-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 0.4rem 0.9rem; font-size: 0.82rem; }
+  .score-item span { color: var(--accent); font-weight: 600; }
+
+  /* RESPONSIVE */
+  @media(max-width: 600px) {
+    .stats-row { grid-template-columns: repeat(3,1fr); }
+    .memory-grid { grid-template-columns: repeat(4,1fr); }
+    nav { padding: 0 1rem; }
+    .nav-links button { padding: 0.35rem 0.5rem; font-size: 0.75rem; }
+  }
+
+  /* ANIMATIONS */
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  section.active { animation: fadeIn 0.4s ease; }
+  .floating { animation: float 4s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">FunZone ✦</div>
+  <div class="nav-links">
+    <button onclick="showPage('home')" id="nav-home" class="active">Home</button>
+    <button onclick="showPage('games')" id="nav-games">Games</button>
+    <button onclick="showPage('playground')" id="nav-playground">Playground</button>
+    <button onclick="showPage('leaderboard')" id="nav-leaderboard">Scores</button>
+    <button onclick="showPage('about')" id="nav-about">About</button>
+  </div>
+</nav>
+
+<!-- PAGE 1: HOME -->
+<section id="home" class="active">
+  <div class="hero-wrap">
+    <div class="hero-badge floating">✦ Interactive Fun Zone — Est. 2025</div>
+    <h1 class="hero-title">Play. Explore.<br><span>Create Magic.</span></h1>
+    <p class="hero-sub">Five pages of pure interactive fun — games, sliders, toggles, quizzes, and more. Dive in!</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="showPage('games')">Start Playing →</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-clicks">0</div>
+        <div class="stat-label">Total Clicks</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-score">0</div>
+        <div class="stat-label">Your Score</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">6</div>
+        <div class="stat-label">Pages</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PAGE 2: GAMES -->
+<section id="games">
+  <h1 class="page-title">🎮 Games</h1>
+  <p class="page-sub">Four mini-games to test your speed, memory, aim, and knowledge.</p>
+
+  <div class="games-grid">
+
+    <!-- REACTION GAME -->
+    <div class="game-card">
+      <h3>⚡ Reaction Time</h3>
+      <p>Click when the box turns green. Test your reflexes!</p>
+      <div class="score-display">Best: <span id="best-reaction">—</span></div>
+      <div id="reaction-box" onclick="reactionClick()">Click to start</div>
+      <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--muted);" id="reaction-msg"></div>
+    </div>
+
+    <!-- MEMORY GAME -->
+    <div class="game-card">
+      <h3>🧠 Memory Match</h3>
+      <p>Flip cards and find matching pairs!</p>
+      <div class="score-row">
+        <div class="score-item">Moves: <span id="mem-moves">0</span></div>
+        <div class="score-item">Pairs: <span id="mem-pairs">0</span>/8</div>
+      </div>
+      <div class="memory-grid" id="memory-grid"></div>
+      <button class="btn-outline" onclick="initMemory()" style="margin-top:1rem; width:100%; padding:0.5rem;">Reset</button>
+    </div>
+
+    <!-- WHACK A MOLE -->
+    <div class="game-card">
+      <h3>🔨 Whack-a-Mole</h3>
+      <p>Hit the moles before they disappear! 30 seconds.</p>
+      <div class="score-row">
+        <div class="score-item">Score: <span id="mole-score">0</span></div>
+        <div class="score-item">Time: <span id="mole-time">30</span>s</div>
+      </div>
+      <div class="mole-grid" id="mole-grid"></div>
+      <button class="btn-outline" onclick="startMole()" id="mole-btn" style="margin-top:1rem; width:100%; padding:0.5rem;">Start Game</button>
+    </div>
+
+    <!-- TRIVIA -->
+    <div class="game-card">
+      <h3>🎯 Quick Trivia</h3>
+      <p>10 questions. How many can you get right?</p>
+      <div class="score-row">
+        <div class="score-item">Q: <span id="q-num">1</span>/10</div>
+        <div class="score-item">Correct: <span id="q-score">0</span></div>
+      </div>
+      <div id="quiz-area">
+        <p class="quiz-q" id="quiz-q"></p>
+        <div class="quiz-opts" id="quiz-opts"></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PAGE 3 (was 4): PLAYGROUND -->
+<section id="playground">
+  <h1 class="page-title">🧪 Playground</h1>
+  <p class="page-sub">Toggle features, tweak sliders, and watch your world change in real time.</p>
+
+  <div class="toggle-grid" id="toggle-grid">
+    <!-- JS fills this -->
+  </div>
+
+  <div class="slider-section">
+    <h2 style="font-family:'Syne',sans-serif; font-size:1.3rem; margin-bottom:1rem; margin-top:2rem;">🎨 Visual Mixer</h2>
+    <div class="slider-row">
+      <label>Red <span id="r-val">120</span></label>
+      <input type="range" min="0" max="255" value="120" id="r-slider" oninput="updateDemo()">
+    </div>
+    <div class="slider-row">
+      <label>Green <span id="g-val">80</span></label>
+      <input type="range" min="0" max="255" value="80" id="g-slider" oninput="updateDemo()">
+    </div>
+    <div class="slider-row">
+      <label>Blue <span id="b-val">220</span></label>
+      <input type="range" min="0" max="255" value="220" id="b-slider" oninput="updateDemo()">
+    </div>
+    <div class="slider-row">
+      <label>Border Radius <span id="br-val">16</span>px</label>
+      <input type="range" min="0" max="80" value="16" id="br-slider" oninput="updateDemo()">
+    </div>
+    <div class="slider-row">
+      <label>Font Size <span id="fs-val">28</span>px</label>
+      <input type="range" min="14" max="60" value="28" id="fs-slider" oninput="updateDemo()">
+    </div>
+    <div id="demo-box">Live Preview</div>
+  </div>
+
+  <!-- PARTICLE SPAWNER -->
+  <h2 style="font-family:'Syne',sans-serif; font-size:1.3rem; margin-top:2.5rem; margin-bottom:1rem;">✨ Particle Spawner</h2>
+  <p style="color:var(--muted); font-size:0.88rem; margin-bottom:1rem;">Click the canvas to spawn particles!</p>
+  <canvas id="particle-canvas" style="width:100%; height:260px; background:var(--surface); border-radius:14px; border:1px solid var(--border); cursor:crosshair; display:block;"></canvas>
+</section>
+
+<!-- PAGE 5: LEADERBOARD -->
+<section id="leaderboard">
+  <h1 class="page-title">🏆 Leaderboard</h1>
+  <p class="page-sub">Top players across all FunZone games. Can you claim the top spot?</p>
+
+  <div class="lb-wrap">
+    <table class="lb-table" id="lb-table">
+      <thead>
+        <tr>
+          <th>RANK</th>
+          <th>PLAYER</th>
+          <th>GAME</th>
+          <th>SCORE</th>
+          <th style="min-width:120px">BAR</th>
+          <th>DATE</th>
+        </tr>
+      </thead>
+      <tbody id="lb-body"></tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:2rem;">
+    <h2 style="font-family:'Syne',sans-serif; font-size:1.3rem; margin-bottom:1rem;">📊 Score Distribution</h2>
+    <canvas id="bar-chart" style="width:100%; height:200px; display:block;"></canvas>
+  </div>
+</section>
+
+<!-- PAGE 6: ABOUT -->
+<section id="about">
+  <h1 class="page-title">✦ About FunZone</h1>
+  <p class="page-sub">A collection of interactive experiences built with creativity and code.</p>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🎮</div>
+      <h3>4 Mini-Games</h3>
+      <p>Reaction, memory, whack-a-mole, and trivia — all playable in your browser.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Live Charts</h3>
+      <p>Track scores with live bar charts and visual data displays.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🧪</div>
+      <h3>Playground</h3>
+      <p>Toggle settings, mix colors with sliders, and spawn interactive particles.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏆</div>
+      <h3>Leaderboard</h3>
+      <p>Track top scores across all games with a live score bar chart.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Zero Dependencies</h3>
+      <p>Pure HTML, CSS, and JavaScript. No frameworks, just pure fun.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎨</div>
+      <h3>Dark & Clean</h3>
+      <p>Designed with a refined dark aesthetic that's easy on the eyes.</p>
+    </div>
+  </div>
+
+  <h2 style="font-family:'Syne',sans-serif; font-size:1.5rem; margin-top:3rem; margin-bottom:0.5rem;">Meet the Team</h2>
+  <p style="color:var(--muted); font-size:0.88rem; margin-bottom:1.25rem;">The imaginary crew behind FunZone.</p>
+  <div class="team-row">
+    <div class="team-card">
+      <div class="avatar av-purple">AJ</div>
+      <div>
+        <div style="font-weight:500;">Alex Jordan</div>
+        <div style="font-size:0.8rem; color:var(--muted);">Lead Designer</div>
+      </div>
+    </div>
+    <div class="team-card">
+      <div class="avatar av-pink">MR</div>
+      <div>
+        <div style="font-weight:500;">Maya Reyes</div>
+        <div style="font-size:0.8rem; color:var(--muted);">Game Developer</div>
+      </div>
+    </div>
+    <div class="team-card">
+      <div class="avatar av-teal">KT</div>
+      <div>
+        <div style="font-weight:500;">Kai Torres</div>
+        <div style="font-size:0.8rem; color:var(--muted);">Data Viz Engineer</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:3rem; text-align:center; color:var(--muted); font-size:0.8rem;">
+    Made with ♥ · FunZone 2025 · All games are client-side
+  </div>
+</section>
+
+<script>
+// =========== NAVIGATION ===========
+let totalClicks = 0, globalScore = 0;
+
+function showPage(id) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+  if(id==='playground') { initToggles(); initParticles(); updateDemo(); }
+  if(id==='leaderboard') renderLeaderboard();
+  if(id==='games') { if(!memInit) initMemory(); if(!quizInit) initQuiz(); initMoleGrid(); }
+}
+
+document.body.addEventListener('click', () => {
+  totalClicks++;
+  document.getElementById('stat-clicks').textContent = totalClicks;
+});
+
+// =========== REACTION GAME ===========
+let reactionState = 'idle', reactionTimer, reactionStart, bestReaction = null;
+
+function reactionClick() {
+  const box = document.getElementById('reaction-box');
+  const msg = document.getElementById('reaction-msg');
+  if(reactionState === 'idle') {
+    box.textContent = 'Wait for green...';
+    box.className = 'red';
+    reactionState = 'waiting';
+    const delay = 1500 + Math.random() * 3000;
+    reactionTimer = setTimeout(() => {
+      box.textContent = 'CLICK NOW!';
+      box.className = 'green';
+      reactionStart = Date.now();
+      reactionState = 'ready';
+    }, delay);
+  } else if(reactionState === 'waiting') {
+    clearTimeout(reactionTimer);
+    box.textContent = 'Too early! Click to try again.';
+    box.className = '';
+    msg.textContent = '';
+    reactionState = 'idle';
+  } else if(reactionState === 'ready') {
+    const ms = Date.now() - reactionStart;
+    if(!bestReaction || ms < bestReaction) bestReaction = ms;
+    document.getElementById('best-reaction').textContent = bestReaction + 'ms';
+    box.textContent = ms + 'ms — ' + (ms < 200 ? '🔥 Amazing!' : ms < 350 ? '👍 Good!' : '😅 Try again!');
+    box.className = '';
+    msg.textContent = 'Click to play again';
+    reactionState = 'idle';
+    addScore(Math.max(0, 500 - ms));
+  }
+}
+
+// =========== MEMORY GAME ===========
+const EMOJIS = ['🦊','🐼','🦄','🐸','🦋','🐙','🦖','🐳'];
+let memFlipped = [], memMatched = 0, memMoves = 0, memLock = false, memInit = false;
+
+function initMemory() {
+  memInit = true; memFlipped = []; memMatched = 0; memMoves = 0; memLock = false;
+  document.getElementById('mem-moves').textContent = 0;
+  document.getElementById('mem-pairs').textContent = 0;
+  const cards = [...EMOJIS, ...EMOJIS].sort(() => Math.random() - 0.5);
+  const grid = document.getElementById('memory-grid');
+  grid.innerHTML = '';
+  cards.forEach((em, i) => {
+    const c = document.createElement('div');
+    c.className = 'mem-card'; c.dataset.val = em; c.dataset.idx = i;
+    c.textContent = '?'; c.onclick = () => flipCard(c);
+    grid.appendChild(c);
+  });
+}
+
+function flipCard(c) {
+  if(memLock || c.classList.contains('flipped') || c.classList.contains('matched')) return;
+  c.classList.add('flipped'); c.textContent = c.dataset.val;
+  memFlipped.push(c);
+  if(memFlipped.length === 2) {
+    memMoves++; document.getElementById('mem-moves').textContent = memMoves;
+    memLock = true;
+    setTimeout(() => {
+      if(memFlipped[0].dataset.val === memFlipped[1].dataset.val) {
+        memFlipped.forEach(x => x.classList.add('matched'));
+        memMatched++;
+        document.getElementById('mem-pairs').textContent = memMatched;
+        if(memMatched === 8) { addScore(500 - memMoves * 10); alert('🎉 You win! Moves: ' + memMoves); }
+      } else {
+        memFlipped.forEach(x => { x.classList.remove('flipped'); x.textContent = '?'; });
+      }
+      memFlipped = []; memLock = false;
+    }, 700);
+  }
+}
+
+// =========== WHACK A MOLE ===========
+let moleScore = 0, moleTime = 30, moleInterval, moleTimerInterval, moleRunning = false;
+
+function initMoleGrid() {
+  const grid = document.getElementById('mole-grid');
+  if(grid.children.length) return;
+  grid.innerHTML = '';
+  for(let i=0;i<9;i++){
+    const h = document.createElement('div');
+    h.className = 'mole-hole'; h.dataset.idx = i; h.textContent = '⬛';
+    h.onclick = () => whackMole(h);
+    grid.appendChild(h);
+  }
+}
+
+function startMole() {
+  if(moleRunning) return;
+  moleRunning = true; moleScore = 0; moleTime = 30;
+  document.getElementById('mole-score').textContent = 0;
+  document.getElementById('mole-time').textContent = 30;
+  document.getElementById('mole-btn').textContent = 'Running...';
+  moleInterval = setInterval(popMole, 700);
+  moleTimerInterval = setInterval(() => {
+    moleTime--;
+    document.getElementById('mole-time').textContent = moleTime;
+    if(moleTime <= 0) { endMole(); }
+  }, 1000);
+}
+
+function popMole() {
+  const holes = document.querySelectorAll('.mole-hole');
+  holes.forEach(h => { h.classList.remove('active'); h.textContent = '⬛'; });
+  const idx = Math.floor(Math.random() * 9);
+  holes[idx].classList.add('active'); holes[idx].textContent = '🐭';
+}
+
+function whackMole(h) {
+  if(!moleRunning || !h.classList.contains('active')) return;
+  h.classList.remove('active'); h.textContent = '💥';
+  moleScore++;
+  document.getElementById('mole-score').textContent = moleScore;
+  setTimeout(() => { h.textContent = '⬛'; }, 300);
+}
+
+function endMole() {
+  clearInterval(moleInterval); clearInterval(moleTimerInterval); moleRunning = false;
+  document.getElementById('mole-btn').textContent = 'Play Again';
+  document.querySelectorAll('.mole-hole').forEach(h => { h.classList.remove('active'); h.textContent = '⬛'; });
+  addScore(moleScore * 10);
+  addToLeaderboard('You', 'Whack-a-Mole', moleScore * 10);
+}
+
+// =========== TRIVIA ===========
+const TRIVIA = [
+  {q:"What planet is closest to the Sun?",a:"Mercury",opts:["Venus","Mercury","Earth","Mars"]},
+  {q:"How many sides does a hexagon have?",a:"6",opts:["5","6","7","8"]},
+  {q:"What is the chemical symbol for gold?",a:"Au",opts:["Go","Gd","Au","Ag"]},
+  {q:"Which ocean is the largest?",a:"Pacific",opts:["Atlantic","Indian","Pacific","Arctic"]},
+  {q:"How many keys does a standard piano have?",a:"88",opts:["72","76","88","100"]},
+  {q:"What year did the first iPhone launch?",a:"2007",opts:["2004","2005","2007","2010"]},
+  {q:"What is H₂O more commonly known as?",a:"Water",opts:["Salt","Water","Oxygen","Hydrogen"]},
+  {q:"Which country has the most natural lakes?",a:"Canada",opts:["USA","Russia","Canada","Brazil"]},
+  {q:"What gas do plants absorb?",a:"CO₂",opts:["O₂","N₂","CO₂","H₂"]},
+  {q:"How many colors are in a rainbow?",a:"7",opts:["5","6","7","8"]}
+];
+let qIdx = 0, qScore = 0, quizInit = false;
+
+function initQuiz() {
+  quizInit = true; qIdx = 0; qScore = 0;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  document.getElementById('q-num').textContent = qIdx + 1;
+  document.getElementById('q-score').textContent = qScore;
+  const t = TRIVIA[qIdx];
+  document.getElementById('quiz-q').textContent = t.q;
+  const opts = document.getElementById('quiz-opts');
+  opts.innerHTML = '';
+  t.opts.forEach(o => {
+    const b = document.createElement('div');
+    b.className = 'quiz-opt'; b.textContent = o;
+    b.onclick = () => answerQ(b, o, t.a);
+    opts.appendChild(b);
+  });
+}
+
+function answerQ(el, chosen, correct) {
+  document.querySelectorAll('.quiz-opt').forEach(o => o.onclick = null);
+  if(chosen === correct) { el.classList.add('correct'); qScore++; addScore(100); }
+  else {
+    el.classList.add('wrong');
+    document.querySelectorAll('.quiz-opt').forEach(o => { if(o.textContent === correct) o.classList.add('correct'); });
+  }
+  setTimeout(() => {
+    qIdx++;
+    if(qIdx >= TRIVIA.length) {
+      document.getElementById('quiz-area').innerHTML = `<p class="quiz-q">Game over! You scored ${qScore}/10 🎉</p><button class="btn-outline" onclick="initQuiz()" style="margin-top:1rem; padding:0.5rem 1.5rem;">Play Again</button>`;
+      addToLeaderboard('You', 'Trivia', qScore * 100);
+    } else renderQuestion();
+  }, 900);
+}
+
+// =========== PLAYGROUND TOGGLES ===========
+const TOGGLES = [
+  {label:'Dark Mode', desc:'Sleek dark theme active', icon:'🌙', on: true},
+  {label:'Sound Effects', desc:'Click and game sounds', icon:'🔊', on: false},
+  {label:'Animations', desc:'Smooth page transitions', icon:'✨', on: true},
+  {label:'High Score Mode', desc:'Double points, harder games', icon:'🔥', on: false},
+  {label:'Particle Effects', desc:'Visual sparkles on click', icon:'💫', on: true},
+  {label:'Auto Save', desc:'Remember your scores', icon:'💾', on: true},
+  {label:'Colorblind Mode', desc:'Enhanced contrast palette', icon:'👁️', on: false},
+  {label:'Zen Mode', desc:'Minimal UI, max focus', icon:'🧘', on: false},
+];
+let togglesInit = false;
+
+function initToggles() {
+  if(togglesInit) return;
+  togglesInit = true;
+  const grid = document.getElementById('toggle-grid');
+  TOGGLES.forEach((t, i) => {
+    const card = document.createElement('div');
+    card.className = 'toggle-card' + (t.on ? ' on' : '');
+    card.id = 'tc-'+i;
+    card.innerHTML = `
+      <div class="toggle-info">
+        <h4>${t.icon} ${t.label}</h4>
+        <p>${t.desc}</p>
+      </div>
+      <div class="toggle ${t.on?'on':''}" id="tg-${i}" onclick="flipToggle(${i})"></div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function flipToggle(i) {
+  TOGGLES[i].on = !TOGGLES[i].on;
+  const tg = document.getElementById('tg-'+i);
+  const tc = document.getElementById('tc-'+i);
+  tg.classList.toggle('on', TOGGLES[i].on);
+  tc.classList.toggle('on', TOGGLES[i].on);
+}
+
+// =========== VISUAL MIXER ===========
+function updateDemo() {
+  const r = document.getElementById('r-slider').value;
+  const g = document.getElementById('g-slider').value;
+  const b = document.getElementById('b-slider').value;
+  const br = document.getElementById('br-slider').value;
+  const fs = document.getElementById('fs-slider').value;
+  document.getElementById('r-val').textContent = r;
+  document.getElementById('g-val').textContent = g;
+  document.getElementById('b-val').textContent = b;
+  document.getElementById('br-val').textContent = br;
+  document.getElementById('fs-val').textContent = fs;
+  const box = document.getElementById('demo-box');
+  box.style.background = `rgb(${r},${g},${b})`;
+  box.style.borderRadius = br + 'px';
+  box.style.fontSize = fs + 'px';
+  box.textContent = `rgb(${r}, ${g}, ${b})`;
+}
+
+// =========== PARTICLES ===========
+let pCanvas, pCtx, particles = [], pAnim;
+
+function initParticles() {
+  pCanvas = document.getElementById('particle-canvas');
+  pCanvas.width = pCanvas.offsetWidth;
+  pCanvas.height = 260;
+  pCtx = pCanvas.getContext('2d');
+  pCanvas.onclick = (e) => {
+    const rect = pCanvas.getBoundingClientRect();
+    spawnParticles(e.clientX - rect.left, e.clientY - rect.top);
+  };
+  if(!pAnim) animParticles();
+}
+
+function spawnParticles(x, y) {
+  const colors = ['#7c5cfc','#fc5c7c','#5cfcd4','#fcd45c','#fc9c5c'];
+  for(let i=0;i<18;i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1 + Math.random() * 4;
+    particles.push({
+      x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed - 2,
+      r: 3 + Math.random()*5, alpha: 1, color: colors[Math.floor(Math.random()*colors.length)],
+      life: 0.015 + Math.random()*0.02
+    });
+  }
+}
+
+function animParticles() {
+  pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+  particles = particles.filter(p => p.alpha > 0);
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.1;
+    p.alpha -= p.life;
+    pCtx.globalAlpha = Math.max(0, p.alpha);
+    pCtx.fillStyle = p.color;
+    pCtx.beginPath();
+    pCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    pCtx.fill();
+  });
+  pCtx.globalAlpha = 1;
+  pAnim = requestAnimationFrame(animParticles);
+}
+
+// =========== LEADERBOARD ===========
+let lbData = [
+  {player:'SpeedKing', game:'Reaction', score:980, date:'Today'},
+  {player:'MemMaster', game:'Memory Match', score:460, date:'Today'},
+  {player:'MoleHunter', game:'Whack-a-Mole', score:380, date:'Yesterday'},
+  {player:'Quizzard', game:'Trivia', score:900, date:'Yesterday'},
+  {player:'PixelAce', game:'Reaction', score:820, date:'2 days ago'},
+  {player:'BrainBox', game:'Memory Match', score:400, date:'2 days ago'},
+  {player:'FastClick', game:'Reaction', score:760, date:'3 days ago'},
+  {player:'TriviaGuru', game:'Trivia', score:700, date:'3 days ago'},
+];
+
+function addToLeaderboard(player, game, score) {
+  lbData.push({player, game, score, date:'Just now'});
+  lbData.sort((a,b) => b.score - a.score);
+}
+
+function renderLeaderboard() {
+  const maxScore = Math.max(...lbData.map(d=>d.score));
+  const body = document.getElementById('lb-body');
+  body.innerHTML = '';
+  lbData.forEach((row, i) => {
+    const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
+    const pct = Math.round((row.score / maxScore) * 100);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
+      <td style="font-weight:500">${row.player}</td>
+      <td style="color:var(--muted); font-size:0.82rem">${row.game}</td>
+      <td style="color:var(--accent); font-weight:600">${row.score}</td>
+      <td><div class="score-bar-wrap"><div class="score-bar" style="width:${pct}%"></div></div></td>
+      <td style="color:var(--muted); font-size:0.78rem">${row.date}</td>
+    `;
+    body.appendChild(tr);
+  });
+  renderBarChart();
+}
+
+function renderBarChart() {
+  const canvas = document.getElementById('bar-chart');
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 200;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const top8 = lbData.slice(0,8);
+  const maxS = Math.max(...top8.map(d=>d.score));
+  const barW = Math.floor((canvas.width - 60) / top8.length) - 8;
+  top8.forEach((row, i) => {
+    const h = Math.round((row.score / maxS) * 140);
+    const x = 30 + i * (barW + 8);
+    const y = 160 - h;
+    const grd = ctx.createLinearGradient(0, y, 0, 160);
+    grd.addColorStop(0, '#7c5cfc');
+    grd.addColorStop(1, '#fc5c7c');
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.roundRect(x, y, barW, h, 4);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '10px DM Sans';
+    ctx.textAlign = 'center';
+    ctx.fillText(row.player.substring(0,6), x + barW/2, 178);
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.fillText(row.score, x + barW/2, y - 4);
+  });
+}
+
+function addScore(pts) {
+  globalScore += Math.round(pts);
+  document.getElementById('stat-score').textContent = globalScore;
+}
+
+// Init
+initMemory(); initQuiz(); initMoleGrid();
+</script>
+</body>
+</html>
